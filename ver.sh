@@ -1,5 +1,27 @@
 #!/bin/bash
+VERSION=0.1.2
 
+#Check if there is at least one argument
+[[ -n "$1" ]] || {
+	echo "ver $VERSION - Copyleft (GPL v3) Julio Serrano 2016"
+	echo "Modo de empleo: ver <título>"
+	echo
+	echo " Ejemplos:"
+	echo
+	echo "   Para reproducir archivos que contengan 'xyz'"
+	echo "   \$> ver xyz"
+	echo
+	echo "   Para ver un episodio de Better call Saul"
+	echo "   \$> ver better call saul"
+	echo
+	echo " Puede introducir un máximo de nueve palabras."
+	echo " El script no tiene en cuenta mayúsculas y minúsculas"
+	echo
+
+	exit 0
+}
+
+#You must chage the path to your own db
 SQLITE="sqlite /home/julio/bin/sver/verdb"
 
 function trim {
@@ -49,6 +71,7 @@ cd $DIR
 
 #Get args into PARH variable
 PARM="$(trim "$1 $2 $3 $4 $5 $6 $7 $8 $9")"
+
 echo "Buscando: >$PARM<"
 echo
 
