@@ -1,6 +1,46 @@
 #!/bin/bash
+
+SQLITE="sqlite /home/julio/bin/sver/verdb"
+
 function trim {
     echo $*
+}
+
+SQLITE="sqlite /home/julio/bin/sver/verdb"
+
+function getFile {
+	filename="$1"
+
+	id=`$SQLITE "select id from file where filename = \"$filename\""`
+	echo $id
+}
+
+function insertFile {
+	filename="$1"
+
+	$SQLITE "insert into file  (filename) values (\"$filename\")"
+
+	echo $(getFile "$filename")
+}
+
+function getVisto {
+	id=$1
+
+	visto=`$SQLITE "select veces from visto where id=$id"`
+	echo $visto
+}
+
+function insertVisto {
+	id=$1
+
+	$SQLITE "insert into visto values ($id, 1)"
+}
+
+function addVisto {
+	id=$1
+
+	$SQLITE "update visto set veces=veces+1 where id=$id"
+	echo "$(getVisto "$id")"
 }
 
 #Basedir: You need to change this to your needs
@@ -72,6 +112,25 @@ else
 		FILM2=`echo $FILM | sed s/u000A//g`
 		#echo "$FILM2" | hexdump -c
 
+		#Look if the file is already in the db
+		ID=$(getFile "$FILM2")
+		#echo $ID
+
+		if [[ ${#ID} == 0 ]]; then
+
+			echo "Es la primera vez que va a ver este archivo"
+			#It is not, let's insert it
+			ID=$(insertFile "$FILM2")
+			#echo $ID
+			$(insertVisto "$ID")
+			#echo "Has visto este archivo $VECES veces"
+
+		else
+			
+			#The file is already in the db, so we update visto
+			VECES=$(addVisto "$ID")
+			echo "Has visto este archivo $VECES veces"
+		fi
 		#Call vlc to play the selected file
 		vlc -f --no-repeat "${FILM2}"
 	#fi
