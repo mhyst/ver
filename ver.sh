@@ -158,6 +158,7 @@ else
 			echo "Has visto este archivo $VECES veces"
 		fi
 		#Call vlc to play the selected file
-		vlc -f --no-repeat "${FILM2}"
+		vlc -f --no-repeat "${FILM2}" &
+		echo " Reproducción en progreso..."
 	#fi
 fi
