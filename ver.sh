@@ -135,15 +135,18 @@ else
 		FILM2=`echo $FILM | sed s/u000A//g`
 		#echo "$FILM2" | hexdump -c
 
+		#Get just the filename without the path
+		FILENAME=$(basename "$FILM2")
+
 		#Look if the file is already in the db
-		ID=$(getFile "$FILM2")
+		ID=$(getFile "$FILENAME")
 		#echo $ID
 
 		if [[ ${#ID} == 0 ]]; then
 
 			echo "Es la primera vez que va a ver este archivo"
 			#It is not, let's insert it
-			ID=$(insertFile "$FILM2")
+			ID=$(insertFile "$FILENAME")
 			#echo $ID
 			$(insertVisto "$ID")
 			#echo "Has visto este archivo $VECES veces"
