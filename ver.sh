@@ -1,4 +1,20 @@
 #!/bin/bash
+#############################################################################
+## C O N F I G     V A R S                                                 ##
+##-------------------------------------------------------------------------##
+##Basedir: You need to change this to your needs                           ##
+DIR="/home/julio/NAS/Download/transmission/completed/"
+##You must chage the path to your own db                                   ##
+SQLITE="sqlite /home/julio/bin/sver/verdb"
+##Change this to your favourite player with the options you like           ##
+PLAYER="vlc -f --no-loop"
+#############################################################################
+
+#Don't touch code from here unless you know what you are doing
+#   | | |
+#   v v v
+
+#Current version
 VERSION=0.1.2
 
 #Check if there is at least one argument
@@ -21,14 +37,9 @@ VERSION=0.1.2
 	exit 0
 }
 
-#You must chage the path to your own db
-SQLITE="sqlite /home/julio/bin/sver/verdb"
-
 function trim {
     echo $*
 }
-
-SQLITE="sqlite /home/julio/bin/sver/verdb"
 
 function getFile {
 	filename="$1"
@@ -65,12 +76,11 @@ function addVisto {
 	echo "$(getVisto "$id")"
 }
 
-#Basedir: You need to change this to your needs
-DIR="/home/julio/NAS/Download/transmission/completed/"
-cd $DIR
-
 #Get args into PARH variable
 PARM="$(trim "$1 $2 $3 $4 $5 $6 $7 $8 $9")"
+
+#Go to base dir where files are located
+cd $DIR
 
 echo "Buscando: >$PARM<"
 echo
@@ -100,18 +110,19 @@ else
 		#As there were several results, we show a menu with all of them
 		for index in ${!IN[*]}
 		do
-		    printf "$index: ${IN[$index]}"
+		    printf " $index: ${IN[$index]}"
 		done
 		
 		echo
-		echo "Introduzca el número:"
+		echo "Introduzca el número del archivo que quiere ver:"
 		read REPLY
 		echo
 
 		#We see if the user entered a number such as we need
 		if [ "$REPLY" -ge 0 -a "$REPLY" -le ${#IN[*]} ]; then
 
-			echo "Usted ha elegido: ${IN[REPLY]}"
+			echo "Usted ha elegido:"
+			echo "  ${IN[REPLY]}"
 			FILM="${IN[REPLY]}"
 
 		else
@@ -144,7 +155,7 @@ else
 
 		if [[ ${#ID} == 0 ]]; then
 
-			echo "Es la primera vez que va a ver este archivo"
+			echo "  Es la primera vez que va a ver este archivo"
 			#It is not, let's insert it
 			ID=$(insertFile "$FILENAME")
 			#echo $ID
@@ -155,10 +166,17 @@ else
 			
 			#The file is already in the db, so we update visto
 			VECES=$(addVisto "$ID")
-			echo "Has visto este archivo $VECES veces"
+			echo "  Ha visto este archivo $VECES veces"
 		fi
+
+		#About to start playing. Let's warn the user and pause
+		echo "  La reproducción va a comenzar..."
+		echo
+		read -rsp $'  Pulsa ENTER para continuar o CTRL^C para abortar...\n'
+
 		#Call vlc to play the selected file
-		vlc -f --no-repeat "${FILM2}" &
-		echo " Reproducción en progreso..."
+		${PLAYER} "${FILM2}" &
+		echo
+		echo "Reproducción en progreso..."
 	#fi
 fi
