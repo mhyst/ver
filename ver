@@ -7,7 +7,7 @@ DIR="/home/julio/NAS/Download/transmission/completed/"
 ##You must chage the path to your own db
 SQLITE="sqlite /home/julio/bin/sver/verdb"
 ##Change this to your favourite player with the options you like
-PLAYER="vlc -f --no-loop"
+PLAYER="vlc -f --no-loop --play-and-exit"
 #############################################################################
 
 #Don't touch code from here unless you know what you are doing
