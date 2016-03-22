@@ -104,6 +104,8 @@ else
 	if [[ ${#IN[*]} == 1 ]]; then
 
 		FILM="$FILE"
+		echo "He encontrado este archivo:"
+		echo "$FILM"
 
 	else
 
@@ -143,11 +145,11 @@ else
 	#if [ $RES == "S" ] || [ $RES == "s" ]; then
 		#echo "$FILM" | hexdump -c
 		#Remove \n chars from the string to avoid vlc errors
-		FILM2=`echo $FILM | sed s/u000A//g`
-		#echo "$FILM2" | hexdump -c
+		FILM=`echo $FILM | sed s/u000A//g`
+		#echo "$FILM" | hexdump -c
 
 		#Get just the filename without the path
-		FILENAME=$(basename "$FILM2")
+		FILENAME=$(basename "$FILM")
 
 		#Look if the file is already in the db
 		ID=$(getFile "$FILENAME")
@@ -175,7 +177,7 @@ else
 		read -rsp $'  Pulsa ENTER para continuar o CTRL^C para abortar...\n'
 
 		#Call vlc to play the selected file
-		${PLAYER} "${FILM2}" &
+		${PLAYER} "${FILM}" &
 		echo
 		echo "Reproducción en progreso..."
 	#fi
