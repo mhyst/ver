@@ -8,6 +8,11 @@ The scripts accepts as parameter the title, complete or partial, of the file you
 
 Since I created this script I save a lot of time. I hope it works for you too.
 
+##Prerequisites
+
+	*sqlite
+	*Any video player
+
 ##The future
 I'm looking for a way to query imdb. It would be nice to search for actors, directors, etc. And it would be nice to add some options to see video details.
 
