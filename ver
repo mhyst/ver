@@ -33,6 +33,11 @@ VERSION=0.1.5
 	echo " Puede introducir un máximo de nueve palabras."
 	echo " El script no tiene en cuenta mayúsculas y minúsculas"
 	echo
+	echo " ver -v <titulo>"
+	echo "      Para listar también medios ya vistos."
+	echo
+	echo " ver -nv"
+	echo "      Para listar todos los medios que no hayan sido reproducidos."
 
 	exit 0
 }
@@ -99,15 +104,29 @@ else
 	PARM="$(trim "$1 $2 $3 $4 $5 $6 $7 $8 $9")"
 fi
 
+VER_NO_VISTOS=false
+if [[ $1 == "-nv" ]]; then
+	VER_NO_VISTOS=true
+	#Get args into PARH variable
+	PARM="*"
+else
+	#Get args into PARH variable
+	PARM="$(trim "$1 $2 $3 $4 $5 $6 $7 $8 $9")"
+fi
 
 #Go to base dir where files are located
 cd $DIR
 
 echo "Buscando: >$PARM<"
 echo
+if $VER_NO_VISTOS; then
+	#Find all files
+	find * -name '*.avi' -o -name '*.mp4' -o -name '*.mkv' -type f | sort > /tmp/films.txt
+else
+	#Find files that match with your args
+	find * -type f | grep -i "$PARM" | sort > /tmp/films.txt
+fi
 
-#Find files that match with your args
-find * -type f | grep -i "$PARM" | sort > /tmp/films.txt
 FILE=$(</tmp/films.txt)
 SIZE=${#FILE}
 
