@@ -40,6 +40,12 @@ VERSION=0.1.5
 	echo
 	echo " ver -nv"
 	echo "      Para listar todos los medios que no hayan sido reproducidos."
+	echo
+	echo " ver ^<título>"
+	echo "      Ir directamente al episodio siguiente de la serie"
+	echo
+	echo " ver --reset <titulo>"
+	echo "      Reiniciar serie"
 
 	exit 0
 }
@@ -100,6 +106,24 @@ function isVisto {
 	fi	
 }
 
+function reset {
+	local filename="$1"
+
+	DATA=`$SQLITE "select id from file where filename like \"%$filename%\""`
+	for id in $DATA; do
+		echo "Borrando Id: $id"
+		$SQLITE "delete from visto where id=$id"
+		$SQLITE "delete from file where id=$id"
+	done
+	echo "Reset completado a $filename"
+}
+
+if [[ $1 == "--reset" ]]; then
+	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
+	reset "$PARM"
+	exit 0
+fi
+
 VER_VISTOS=false
 if [[ $1 == "-v" ]]; then
 	VER_VISTOS=true
@@ -118,6 +142,14 @@ if [[ $1 == "-nv" ]]; then
 else
 	#Get args into PARH variable
 	PARM="$(trim "$1 $2 $3 $4 $5 $6 $7 $8 $9")"
+fi
+
+#Play next episode
+#This option is no compatible with -v or -nv
+DIRECTO=false
+if [[ $PARM == ^* ]]; then
+	PARM=${PARM:1}
+	DIRECTO=true
 fi
 
 #Go to base dir where files are located
@@ -166,46 +198,54 @@ else
 		    elif [[ $(isVisto "$ITERA") == 0 ]]; then
 		    	printf " $index: $ITERA"
 		    	QUEDA=true
+		    	if $DIRECTO; then
+		    		echo "Reproducir directamente el siguiente"
+		    		FILM="$ITERA"
+		    		break
+		    	fi
 		    fi
 			#if [ $(isVisto "${IN[$index]}") ] || $VER_VISTOS; then
 		    #	printf " $index: ${IN[$index]}"
 		    #	QUEDA=true
 		    #fi
 		done
-		
+
 		if ! $QUEDA; then
 			echo "Usted ya ha visto todos los archivos coincidentes"
 			echo "Si a pesar de todo quiere volver a verlos, use \"ver -v $PARM\""
 			exit
 		fi
+		
 
-		echo
-		echo "Introduzca el número del archivo que quiere ver:"
-		read REPLY
-		echo
+		if ! $DIRECTO; then
 
-		#We see if the user entered a number such as we need
-
-		LIMITE=$(( ${#IN[*]} - 1 ))
-		#LIMITE2=$(( LIMITE - 1 ))
-		while [ "$REPLY" -lt 0 ] || [ "$REPLY" -gt  $LIMITE ]; do
-
-			#We give advice to the user and exit
-			echo "Tiene que introducir un número de entre los señalados:"
+			echo
+			echo "Introduzca el número del archivo que quiere ver:"
 			read REPLY
+			echo
 
-		done
+			#We see if the user entered a number such as we need
+			LIMITE=$(( ${#IN[*]} - 1 ))
+			#LIMITE2=$(( LIMITE - 1 ))
+			while [ "$REPLY" -lt 0 ] || [ "$REPLY" -gt  $LIMITE ]; do
 
-		CHOSEN=${IN[REPLY]}
-		if [ ${#CHOSEN} == 0 ]; then
-			echo "Debe elegir entre los que se le ofrecen"
-			exit 1
-		else
-			echo "Ha elegido:"
-			echo "  $CHOSEN"
-			FILM="$CHOSEN"
+				#We give advice to the user and exit
+				echo "Tiene que introducir un número de entre los señalados:"
+				read REPLY
+
+			done
+
+			CHOSEN=${IN[REPLY]}
+			if [ ${#CHOSEN} == 0 ]; then
+				echo "Debe elegir entre los que se le ofrecen"
+				exit 1
+			else
+				echo "Ha elegido:"
+				echo "  $CHOSEN"
+				FILM="$CHOSEN"
+			fi
+
 		fi
-
 	fi
 
 
@@ -235,7 +275,9 @@ else
 	#About to start playing. Let's warn the user and pause
 	echo "  La reproducción va a comenzar..."
 	echo
-	read -rsp $'  Pulsa ENTER para continuar o CTRL^C para abortar...\n'
+	if ! $DIRECTO; then
+		read -rsp $'  Pulsa ENTER para continuar o CTRL^C para abortar...\n'
+	fi
 
 	#Call vlc to play the selected file
 	${PLAYER} "${FILM}" &
