@@ -15,7 +15,7 @@ PLAYER="vlc -f --no-loop --play-and-exit"
 #   v v v
 
 #Current version
-VERSION="0.1.6"
+VERSION="0.1.7"
 
 #Check if there is at least one argument
 [[ -n "$1" ]] || {
