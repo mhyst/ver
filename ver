@@ -15,7 +15,7 @@ PLAYER="vlc -f --no-loop --play-and-exit"
 #   v v v
 
 #Current version
-VERSION=0.1.6
+VERSION="0.1.6"
 
 #Check if there is at least one argument
 [[ -n "$1" ]] || {
@@ -118,24 +118,17 @@ function reset {
 	echo "Reset completado a $filename"
 }
 
+VER_NO_VISTOS=false
+VER_VISTOS=false
 if [[ $1 == "--reset" ]]; then
 	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
 	reset "$PARM"
 	exit 0
-fi
-
-VER_VISTOS=false
-if [[ $1 == "-v" ]]; then
+elif [[ $1 == "-v" ]]; then
 	VER_VISTOS=true
 	#Get args into PARH variable
 	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
-else
-	#Get args into PARH variable
-	PARM="$(trim "$1 $2 $3 $4 $5 $6 $7 $8 $9")"
-fi
-
-VER_NO_VISTOS=false
-if [[ $1 == "-nv" ]]; then
+elif [[ $1 == "-nv" ]]; then
 	VER_NO_VISTOS=true
 	#Get args into PARH variable
 	PARM="*"
@@ -162,7 +155,7 @@ if $VER_NO_VISTOS; then
 	find * -name '*.avi' -o -name '*.mp4' -o -name '*.mkv' -type f | sort > /tmp/films.txt
 else
 	#Find files that match with your args
-	find * -type f | grep -i "$PARM" | sort > /tmp/films.txt
+	find * -name '*.avi' -o -name '*.mp4' -o -name '*.mkv' -type f | grep -i "$PARM" | sort > /tmp/films.txt
 fi
 
 FILE=$(</tmp/films.txt)
@@ -188,15 +181,25 @@ else
 	else
 
 		QUEDA=false
+		primero=true
 		#As there were several results, we show a menu with all of them
 		for index in ${!IN[*]}
 		do
 			ITERA=${IN[$index]}
 			if $VER_VISTOS; then
-				printf " $index: $ITERA"
+				sign=" "
+				if [[ $(isVisto "$ITERA") == 0 ]]; then	
+					if $primero; then
+						sign=">"
+						primero=false
+					else
+						sign=" "
+		    		fi
+				fi
+				printf " $sign$index:\t$ITERA"
 		    	QUEDA=true
 		    elif [[ $(isVisto "$ITERA") == 0 ]]; then
-		    	printf " $index: $ITERA"
+	    		printf " $index:\t$ITERA"	
 		    	QUEDA=true
 		    	if $DIRECTO; then
 		    		echo "Reproducir directamente el siguiente"
