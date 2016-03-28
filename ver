@@ -180,7 +180,7 @@ function resetBy {
 	echo "Reset finalizado a $filename"
 }
 
-TEMP=`getopt -o bfhnrv: --long "back,forth,forth-by:,forth-all,help,reset,reset-by:" -- "$@"`
+TEMP=`getopt -o bfhnrv: --long "back,forth,forth-by:,forth-all,help,reset,mreset:,reset-by:" -- "$@"`
 
 # Debug
 #echo "$TEMP"
@@ -195,18 +195,20 @@ forth_number=0
 forth_all=false
 reset=false
 reset_by=false
-back=false
+back=0
+reset_data=()
 
 while true; do
   case "$1" in
   	-h | --help ) help; exit ;;
-	-b | --back ) back=true; shift ;;
-	-f | --forth ) forth_number=1; shift ;;
+	-b | --back ) let back++; shift ;;
+	-f | --forth ) let forth_number++; shift ;;
 	--forth-by ) forth_number=$2; shift 2 ;;
 	--forth-all ) forth_all=true; shift ;;
 	-n ) VER_NO_VISTOS=true; shift ;;
     -v ) VER_VISTOS=true; shift ;;
 	-r | --reset ) reset=true; shift ;;
+	--mreset ) reset_data+=("$2"); shift 2 ;;
 	--reset-by ) reset_by=true; bydata=$2; shift 2 ;;
     * ) break ;;
   esac
@@ -234,11 +236,24 @@ if $reset_by; then
 	resetBy "$PARM" $bydata
 fi
 
-if $back; then
-	res=$(resetBackOne "$PARM")
-	unset res
-	#echo "Paso atrás completado"
+if [[ ${#reset_data} > 0 ]]; then
+	echo "Número de peticiones de mreset: ${#reset_data}"
+	for part in ${reset_data[@]}; do
+		echo "$part"
+		reset "$part"
+		if [[ $PARM == "" ]]; then
+			PARM="$part"
+		fi
+	done
 fi
+
+while [[ $back > 0 ]]; do
+	res=$(resetBackOne "$PARM")
+	
+	let back--
+done
+unset res
+
 
 # VER_NO_VISTOS=false
 # VER_VISTOS=false
