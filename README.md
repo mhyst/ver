@@ -10,7 +10,7 @@ Since I created this script I save a lot of time. I hope it works for you too.
 
 ##Options
 
-Notice: All options have to be passed as first argument: '''ver [option] search string'''. This is because all and every options are incompatible with each other. They do specific tasks for you that cannot be combined.
+Notice: All options have to be passed as first argument: `ver [option] search string`. This is because all and every options are incompatible with each other. They do specific tasks for you that cannot be combined.
 
 * -v : By default, ver hides files you've already watched. If you want ver to list all the files related to your search string, including this option will make all visible again.
 
