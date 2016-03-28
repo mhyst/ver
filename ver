@@ -144,7 +144,7 @@ function reset {
 
 	DATA=`$SQLITE "select id from file where filename like \"%$filename%\""`
 	for id in $DATA; do
-		echo "Borrando Id: $id"
+		#echo "Borrando Id: $id"
 		$SQLITE "delete from visto where id=$id"
 		$SQLITE "delete from file where id=$id"
 	done
