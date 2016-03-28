@@ -10,8 +10,6 @@ Since I created this script I save a lot of time. I hope it works for you too.
 
 ##Options
 
-Notice: .
-
 * -v : By default, ver hides files you've already watched. If you want ver to list all the files related to your search string, including this option will make all visible again.
 
 * -n : Say you want to list all files you haven't watched yet. This is your option. This option wont take into account any other arguments.
