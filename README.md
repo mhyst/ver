@@ -10,13 +10,25 @@ Since I created this script I save a lot of time. I hope it works for you too.
 
 ##Options
 
-Notice: All options have to be passed as first argument: '''ver [option] search string'''. This is because all and every options are incompatible with each other. They do specific tasks for you that cannot be combined.
+Notice: .
 
 * -v : By default, ver hides files you've already watched. If you want ver to list all the files related to your search string, including this option will make all visible again.
 
-* -nv : Say you want to list all files you haven't watched yet. This is your option. This option wont take any other arguments.
+* -n : Say you want to list all files you haven't watched yet. This is your option. This option wont take into account any other arguments.
 
-* --reset : Once you have seen all episodes of your favourite series, yoy might want to start watching it again from the begining. This option will remove your series from the database so you can see it all over again.
+* -r, --reset : Once you have seen all episodes of your favourite series, yoy might want to start watching it again from the begining. This option will remove your series from the database so you can see it all over again.
+
+* --reset-by n : Like previous option, but you can specify the number of episodes you want to go back resetting. 
+
+* -m, --mreset : --reset and --reset-by can only be performed once for every time you launch ver. If you want to reset two or three series at a time, this is for you. After every --mreset write the title of series you want. if the title contains several words, use quotation marks. 
+
+* -b, --back : It is a synonym of --reset-by 1.
+
+* -f, --forth : Marks as watched the following episode of the series.
+
+* --forth-by n : Marks as watched the following n episodes of the series.
+
+* -a, --forth-all : Marks all episodes of the series as watched.
 
 * ^[search string] : Since ver knows which episodes you've already seen from the series you are quering, this option (just adding an '^' before your search string) will make ver go straight forward to play the next episode for you, without pauses.
 
@@ -49,6 +61,21 @@ Reset "abc xyz" series to begin watching it from the begining all over again.
 `ver ^abc xyz`
 
 Play the next episode of series "abc xyz" (works with films too).
+
+
+`ver --mreset "abc xyz" -m "def tuv" --mreset abc`
+
+Reset the three series with just one command.
+
+
+`ver --forth abc xyz`
+
+Advances the pointer to the next chapter of "abc xyz".
+
+
+`ver --back abc xyz`
+
+Moves the pointer up to the previous chapter of the series "abc xyz"
 
 ##Prerequisites
 
