@@ -18,11 +18,11 @@ PLAYER="vlc -f --no-loop --play-and-exit"
 VERSION="0.1.7"
 
 #Check if there is at least one argument
-[[ -n "$1" ]] || {
+if [[ ${#1} == 0 ]] || [[ $1 == "--help" ]] || [[ $1 == "-h" ]]; then
 	echo "ver $VERSION - Copyleft (GPL v3) Julio Serrano 2016"
 	echo "Series and films watching mate"
 	echo
-	echo "Modo de empleo: ver <título>"
+	echo "Modo de empleo: ver [opción] <título>"
 	echo
 	echo " Ejemplos:"
 	echo
@@ -33,22 +33,30 @@ VERSION="0.1.7"
 	echo "   \$> ver better call saul"
 	echo
 	echo " Puede introducir un máximo de nueve palabras."
-	echo " El script no tiene en cuenta mayúsculas y minúsculas"
+	echo " El script no tiene en cuenta mayúsculas y minúsculas."
 	echo
-	echo " ver -v <titulo>"
+	echo "Opciones"
+	echo " -v"
 	echo "      Para listar también medios ya vistos."
 	echo
-	echo " ver -nv"
+	echo " -nv"
 	echo "      Para listar todos los medios que no hayan sido reproducidos."
 	echo
-	echo " ver ^<título>"
-	echo "      Ir directamente al episodio siguiente de la serie"
+	echo " ^<título>"
+	echo "      Ir directamente al episodio siguiente de la serie."
 	echo
-	echo " ver --reset <titulo>"
+	echo " -r, --reset"
 	echo "      Reiniciar serie"
+	echo
+	echo " -rn, --reset~n"
+	echo "      En ambos casos se debe sustituir 'n' por un número."
+	echo "      Volver 'n' episodios atrás en la serie."	
+	echo
+	echo " -b, --back"
+	echo "      Volver un episodio atrás."
 
 	exit 0
-}
+fi
 
 echo "ver $VERSION - Copyleft (GPL v3) Julio Serrano 2016"
 echo "Helper to watch series video files and films"
@@ -58,16 +66,27 @@ function trim {
     echo $*
 }
 
+function makeFilename {
+	local filename="$1"
+	filename=`echo "$filename" | sed s/u000A//g`
+	filename=$(basename "$filename")
+	echo "$filename"
+}
+
 function getFile {
-	filename="$1"
+	local filename="$1"
+	filename=$(makeFilename "$filename")
 
 	id=`$SQLITE "select id from file where filename = \"$filename\""`
 	echo $id
 }
 
 function insertFile {
-	filename="$1"
+	local filename="$1"
+	filename=$(makeFilename "$filename")
 
+	#filename=`echo "$filename" | sed s/u000A//g`
+	#filename=$(basename "$filename")
 	$SQLITE "insert into file  (filename) values (\"$filename\")"
 
 	echo $(getFile "$filename")
@@ -94,16 +113,37 @@ function addVisto {
 }
 
 function isVisto {
-	filename="$1"
+	local filename="$1"
+	#filename=$(makeFilename "$filename")
 
-	filename=`echo "$filename" | sed s/u000A//g`
-	OBJ=$(basename "$filename")
-	id=$(getFile "$OBJ")
+	local id=$(getFile "$filename")
 	if [[ ${#id} == 0 ]]; then
 		echo 0
 	else
 		echo $(getVisto "$id")
 	fi	
+}
+
+function goForth {
+	local filename="$1"
+
+	local ID=$(getFile "$filename")
+	#echo $ID
+
+	if [[ ${#ID} == 0 ]]; then
+
+		#It is not, let's insert it
+		ID=$(insertFile "$filename")
+		#echo $ID
+		$(insertVisto "$ID")
+		#echo "Has visto este archivo $VECES veces"
+
+	else
+
+		#The file is already in the db, so we update visto
+		VECES=$(addVisto "$ID")
+
+	fi		
 }
 
 function reset {
@@ -118,12 +158,80 @@ function reset {
 	echo "Reset completado a $filename"
 }
 
+function resetBackOne {
+	local filename="$1"
+
+	local id=`$SQLITE "select max(id) from file where filename like \"%$filename%\""`
+	local idSize=${#id}
+
+	if [[ $idSize == 0 ]]; then
+		echo false
+	else
+		$SQLITE "delete from visto where id=$id"
+		$SQLITE "delete from file where id=$id"
+		echo true
+	fi
+}
+
+function resetBy {
+	local filename="$1"
+	local by=$2
+
+	for ((i=0; i<$by; i++)); do
+		local res=$(resetBackOne "$filename" "$by")
+		if ! $res; then
+			echo "Reset interrumpido antes de finalizar"
+			break
+		fi
+	done
+	echo "Reset finalizado a $filename"
+}
+
 VER_NO_VISTOS=false
 VER_VISTOS=false
-if [[ $1 == "--reset" ]]; then
+forth_number=0
+forth_all=false
+#Reset BY veriable
+rstby="--reset~"
+rstby2="-r"
+frthby="--forth~"
+frthby2="--f"
+
+if [[ $1 == "--reset" ]] || [[ $1 == "-r" ]]; then
 	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
 	reset "$PARM"
-	exit 0
+	#exit 0
+elif [[ $1 == $rstby* ]]; then
+	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
+	bydata=$1
+	resetBy "$PARM" ${bydata:8}
+	#exit 0
+elif [[ $1 == $rstby2* ]]; then
+	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
+	bydata=$1
+	resetBy "$PARM" ${bydata:2}
+	#exit 0
+elif [[ $1 == "--back" ]] || [[ $1 == "-b" ]]; then
+	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
+	res=$(resetBackOne "$PARM")
+	unset res
+	echo "Paso atrás completado"
+	#exit
+elif [[ $1 == "--forth" ]] || [[ $1 == "-f" ]]; then
+	forth_number=1
+	#Get args into PARH variable
+	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"	
+elif [[ $1 == "--forth~all" ]]; then
+	forth_all=true
+	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"	
+elif [[ $1 == $frthby* ]]; then
+	forth_number=${1:8}
+	#Get args into PARH variable
+	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"	
+elif [[ $1 == $frthby2* ]]; then
+	forth_number=${1:2}	
+	#Get args into PARH variable
+	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
 elif [[ $1 == "-v" ]]; then
 	VER_VISTOS=true
 	#Get args into PARH variable
@@ -198,13 +306,20 @@ else
 				fi
 				printf " $sign$index:\t$ITERA"
 		    	QUEDA=true
-		    elif [[ $(isVisto "$ITERA") == 0 ]]; then
-	    		printf " $index:\t$ITERA"	
-		    	QUEDA=true
-		    	if $DIRECTO; then
-		    		echo "Reproducir directamente el siguiente"
-		    		FILM="$ITERA"
-		    		break
+		    else
+		    	if [[ $(isVisto "$ITERA") == 0 ]]; then
+			    	if [[ $forth_number > 0 ]] || $forth_all; then
+			    		goForth "$ITERA"
+			    		let forth_number--
+			    	else
+		    			printf "  $index:\t$ITERA"	
+				    	QUEDA=true
+				    	if $DIRECTO; then
+				    		echo "Reproducir directamente el siguiente"
+				    		FILM="$ITERA"
+				    		break
+				    	fi
+		    		fi
 		    	fi
 		    fi
 			#if [ $(isVisto "${IN[$index]}") ] || $VER_VISTOS; then
