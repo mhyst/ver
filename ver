@@ -17,8 +17,7 @@ PLAYER="vlc -f --no-loop --play-and-exit"
 #Current version
 VERSION="0.1.7"
 
-#Check if there is at least one argument
-if [[ ${#1} == 0 ]] || [[ $1 == "--help" ]] || [[ $1 == "-h" ]]; then
+function help {
 	echo "ver $VERSION - Copyleft (GPL v3) Julio Serrano 2016"
 	echo "Series and films watching mate"
 	echo
@@ -53,14 +52,8 @@ if [[ ${#1} == 0 ]] || [[ $1 == "--help" ]] || [[ $1 == "-h" ]]; then
 	echo "      Volver 'n' episodios atrás en la serie."	
 	echo
 	echo " -b, --back"
-	echo "      Volver un episodio atrás."
-
-	exit 0
-fi
-
-echo "ver $VERSION - Copyleft (GPL v3) Julio Serrano 2016"
-echo "Helper to watch series video files and films"
-echo
+	echo "      Volver un episodio atrás."	
+}
 
 function trim {
     echo $*
@@ -187,63 +180,123 @@ function resetBy {
 	echo "Reset finalizado a $filename"
 }
 
+TEMP=`getopt -o bfhnrv: --long "back,forth,forth-by:,forth-all,help,reset,reset-by:" -- "$@"`
+
+# Debug
+#echo "$TEMP"
+if [ $? != 0 ] ; then help ; exit 1 ; fi
+
+# Note the quotes around `$TEMP': they are essential!
+eval set -- "$TEMP"
+
 VER_NO_VISTOS=false
 VER_VISTOS=false
 forth_number=0
 forth_all=false
-#Reset BY veriable
-rstby="--reset~"
-rstby2="-r"
-frthby="--forth~"
-frthby2="--f"
+reset=false
+reset_by=false
+back=false
 
-if [[ $1 == "--reset" ]] || [[ $1 == "-r" ]]; then
-	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
+while true; do
+  case "$1" in
+  	-h | --help ) help; exit ;;
+	-b | --back ) back=true; shift ;;
+	-f | --forth ) forth_number=1; shift ;;
+	--forth-by ) forth_number=$2; shift 2 ;;
+	--forth-all ) forth_all=true; shift ;;
+	-n ) VER_NO_VISTOS=true; shift ;;
+    -v ) VER_VISTOS=true; shift ;;
+	-r | --reset ) reset=true; shift ;;
+	--reset-by ) reset_by=true; bydata=$2; shift 2 ;;
+    * ) break ;;
+  esac
+done
+
+PARM=""
+for arg in $@; do
+	if [[ $1 != "--" ]]; then
+		PARM="$PARM$1 "
+	fi
+	shift
+done
+
+PARM=$(trim $PARM)
+
+echo "ver $VERSION - Copyleft (GPL v3) Julio Serrano 2016"
+echo "Helper to watch series video files and films"
+echo
+
+if $reset; then
 	reset "$PARM"
-	#exit 0
-elif [[ $1 == $rstby* ]]; then
-	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
-	bydata=$1
-	resetBy "$PARM" ${bydata:8}
-	#exit 0
-elif [[ $1 == $rstby2* ]]; then
-	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
-	bydata=$1
-	resetBy "$PARM" ${bydata:2}
-	#exit 0
-elif [[ $1 == "--back" ]] || [[ $1 == "-b" ]]; then
-	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
+fi
+
+if $reset_by; then
+	resetBy "$PARM" $bydata
+fi
+
+if $back; then
 	res=$(resetBackOne "$PARM")
 	unset res
-	echo "Paso atrás completado"
-	#exit
-elif [[ $1 == "--forth" ]] || [[ $1 == "-f" ]]; then
-	forth_number=1
-	#Get args into PARH variable
-	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"	
-elif [[ $1 == "--forth~all" ]]; then
-	forth_all=true
-	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"	
-elif [[ $1 == $frthby* ]]; then
-	forth_number=${1:8}
-	#Get args into PARH variable
-	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"	
-elif [[ $1 == $frthby2* ]]; then
-	forth_number=${1:2}	
-	#Get args into PARH variable
-	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
-elif [[ $1 == "-v" ]]; then
-	VER_VISTOS=true
-	#Get args into PARH variable
-	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
-elif [[ $1 == "-nv" ]]; then
-	VER_NO_VISTOS=true
-	#Get args into PARH variable
-	PARM="*"
-else
-	#Get args into PARH variable
-	PARM="$(trim "$1 $2 $3 $4 $5 $6 $7 $8 $9")"
+	#echo "Paso atrás completado"
 fi
+
+# VER_NO_VISTOS=false
+# VER_VISTOS=false
+# forth_number=0
+# forth_all=false
+# #Reset BY veriable
+# rstby="--reset~"
+# rstby2="-r"
+# frthby="--forth~"
+# frthby2="--f"
+
+# if [[ $1 == "--reset" ]] || [[ $1 == "-r" ]]; then
+# 	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
+# 	reset "$PARM"
+# 	#exit 0
+# elif [[ $1 == $rstby* ]]; then
+# 	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
+# 	bydata=$1
+# 	resetBy "$PARM" ${bydata:8}
+# 	#exit 0
+# elif [[ $1 == $rstby2* ]]; then
+# 	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
+# 	bydata=$1
+# 	resetBy "$PARM" ${bydata:2}
+# 	#exit 0
+# elif [[ $1 == "--back" ]] || [[ $1 == "-b" ]]; then
+# 	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
+# 	res=$(resetBackOne "$PARM")
+# 	unset res
+# 	echo "Paso atrás completado"
+# 	#exit
+# elif [[ $1 == "--forth" ]] || [[ $1 == "-f" ]]; then
+# 	forth_number=1
+# 	#Get args into PARH variable
+# 	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"	
+# elif [[ $1 == "--forth~all" ]]; then
+# 	forth_all=true
+# 	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"	
+# elif [[ $1 == $frthby* ]]; then
+# 	forth_number=${1:8}
+# 	#Get args into PARH variable
+# 	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"	
+# elif [[ $1 == $frthby2* ]]; then
+# 	forth_number=${1:2}	
+# 	#Get args into PARH variable
+# 	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
+# elif [[ $1 == "-v" ]]; then
+# 	VER_VISTOS=true
+# 	#Get args into PARH variable
+# 	PARM="$(trim "$2 $3 $4 $5 $6 $7 $8 $9")"
+# elif [[ $1 == "-nv" ]]; then
+# 	VER_NO_VISTOS=true
+# 	#Get args into PARH variable
+# 	PARM="*"
+# else
+# 	#Get args into PARH variable
+# 	PARM="$(trim "$1 $2 $3 $4 $5 $6 $7 $8 $9")"
+# fi
 
 #Play next episode
 #This option is no compatible with -v or -nv
