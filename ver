@@ -3,9 +3,10 @@
 ## C O N F I G     V A R S                                                 ##
 ##-------------------------------------------------------------------------##
 ##Basedir: You need to change this to your needs
-DIR="/home/julio/NAS/Download/transmission/completed/"
+DIR="/home/mhyst/NAS/Download/transmission/completed/"
+DIRS="/home/mhyst/bin/scripts/series/titles/"
 ##You must chage the path to your own db
-SQLITE="sqlite /home/julio/bin/sver/verdb"
+SQLITE="sqlite /home/mhyst/bin/scripts/ver/verdb"
 ##Change this to your favourite player with the options you like
 PLAYER="vlc -f --no-loop --play-and-exit"
 #############################################################################
@@ -194,6 +195,39 @@ function resetBy {
 	echo "Reset finalizado a $filename"
 }
 
+function isSeries {
+	local name="$1"
+	local line="$2"
+	local res=false
+
+	#Recorremos el directorio de las series mismo de clat
+	for serie in `ls -1 $DIRS`; do
+		#Si el nombre del archivo coincide con el de una serie
+		if [[ ${name,,} == ${serie,,}* ]]; then
+			echo true
+			# echo ">>>Este archivo es de la serie $serie"
+			# episode=`echo $name | grep -oE '[0-9]{1,2}x[0-9]{1,3}'`
+
+
+			# res=$(isDownloaded "$serie" "$episode")
+			# if $res; then
+			# 	echo "    Ya lo tenemos"
+			# else
+			# 	# local dotname=`echo "$name" | tr " " .`
+			# 	# res=$(isDownloaded "$dotname")
+			# 	# if $res; then
+			# 	# 	echo "    Ya lo tenemos"
+			# 	# else
+			# 		echo "    No lo tenemos"
+			# 		#Llamamos a la funcion que descargará el archivo
+			# 		check "$name" "$line" "$serie"
+			# 	#fi
+			# fi
+			break
+    	fi
+	done 	
+}
+
 TEMP=`getopt -o abfhmnrv: --long "back,forth,forth-by:,forth-all,help,reset,mreset:,reset-by:" -- "$@"`
 
 # Debug
@@ -334,6 +368,18 @@ else
 				printf " $sign$index:\t$(basename "$ITERA")\n"
 		    	QUEDA=true
 		    else
+		    	if $VER_NO_VISTOS; then
+		    		echo "Entra"
+		    		seriefile=$(basename "$ITERA")
+		    		seriefile=$(echo $seriefile | tr . " ")
+		    		echo "Sale: $seriefile"
+		    		res=$(isSeries "$seriefile")
+		    		if $res; then
+		    			echo "Lo pilla"
+		    			continue
+		    		fi
+		    	fi
+
 		    	if [[ $(isVisto "$ITERA") == 0 ]]; then
 			    	if [[ $forth_number > 0 ]] || $forth_all; then
 			    		goForth "$ITERA"
@@ -348,6 +394,7 @@ else
 				    	fi
 		    		fi
 		    	fi
+			    
 		    fi
 			#if [ $(isVisto "${IN[$index]}") ] || $VER_VISTOS; then
 		    #	printf " $index: ${IN[$index]}"
