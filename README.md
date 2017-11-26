@@ -1,4 +1,4 @@
-##What is ver
+## What is ver
 
 This tool is headed to those like me that keep a large number of video downloads on one folder. As time passes, you get everyday harder and harder to find the file you want to play. This is one of such tasks than are more difficult with a GUI program. So this script is to be run from your terminal.
 
@@ -8,7 +8,7 @@ The scripts accepts as parameter the title, complete or partial, of the file you
 
 Since I created this script I save a lot of time. I hope it works for you too.
 
-##Options
+## Options
 
 * -v : By default, ver hides files you've already watched. If you want ver to list all the files related to your search string, including this option will make all visible again.
 
@@ -30,7 +30,7 @@ Since I created this script I save a lot of time. I hope it works for you too.
 
 * ^[search string] : Since ver knows which episodes you've already seen from the series you are quering, this option (just adding an '^' before your search string) will make ver go straight forward to play the next episode for you, without pauses.
 
-##Examples
+## Examples
 
 Note: all the examples are made with the query string "abc xyz". You can change if for the title you want.
 
@@ -75,12 +75,12 @@ Advances the pointer to the next chapter of "abc xyz".
 
 Moves the pointer up to the previous chapter of the series "abc xyz"
 
-##Prerequisites
+## Prerequisites
 
 	* sqlite
 	* Any video player
 
-##The future
+## The future
 
 I'm looking for a way to query imdb. It would be nice to search for actors, directors, etc. And it would be nice to add some options to see video details.
 
