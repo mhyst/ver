@@ -85,3 +85,4 @@ Moves the pointer up to the previous chapter of the series "abc xyz"
 I'm looking for a way to query imdb. It would be nice to search for actors, directors, etc. And it would be nice to add some options to see video details.
 
 If you have problems using it or have ideas that could improve it, feel free to write me to <a href="mailto:mhysterio@gmail.com">mhysterio at gmail dot com</a>
+How knows, you could even want to help me!
