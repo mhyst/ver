@@ -472,7 +472,7 @@ else
 	fi
 
 	#Call vlc to play the selected file
-	${PLAYER} "${FILM}" &
+	${PLAYER} "${FILM}" 2> /dev/null &
 	echo
 	echo "Reproducción en progreso..."
 
